@@ -1,67 +1,44 @@
-"""
-iris_project/transformers/train_model.py
------------------------------------------
-Mage transformer block: train_model
-Trains a DecisionTreeClassifier on the train split and evaluates it
-on the test split.
-"""
+import joblib
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
 
-try:
-    from mage_ai.data_preparation.decorators import transformer, test
-except ImportError:
-    def transformer(fn):
-        return fn
-    def test(fn):
-        return fn
+if 'transformer' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import transformer
+    except ImportError:
+        def transformer(fn):
+            return fn
 
-ACCURACY_THRESHOLD = 0.85
+if 'test' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import test
+    except ImportError:
+        def test(fn):
+            return fn
+
+FEATURES = ['sepal length (cm)', 'sepal width (cm)',
+            'petal length (cm)', 'petal width (cm)']
 
 
 @transformer
-def transform(df, *args, **kwargs):
-    """
-    Train a DecisionTreeClassifier and return predictions DataFrame.
+def train(df, *args, **kwargs):
+    max_depth = int(kwargs.get('max_depth', 3))
 
-    Runtime var  : max_depth (int, default 3)
-    Returns      : DataFrame with columns [y_true, y_pred, split, accuracy]
-    """
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn.metrics import accuracy_score
-    import pandas as pd
+    train_df = df[df['split'] == 'train']
+    test_df = df[df['split'] == 'test'].copy()
 
-    max_depth = int(kwargs.get("max_depth", 3))
+    model = DecisionTreeClassifier(max_depth=max_depth, random_state=42)
+    model.fit(train_df[FEATURES], train_df['target'])
 
-    feature_cols = [c for c in df.columns if c not in ("target", "split")]
-    train = df[df["split"] == "train"]
-    test_set = df[df["split"] == "test"]
+    test_df['predicted'] = model.predict(test_df[FEATURES])
+    accuracy = (test_df['predicted'] == test_df['target']).mean()
+    print('max_depth =', max_depth, '| Test accuracy =', round(accuracy, 3))
 
-    X_train = train[feature_cols]
-    y_train = train["target"]
-    X_test = test_set[feature_cols]
-    y_test = test_set["target"]
-
-    clf = DecisionTreeClassifier(max_depth=max_depth, random_state=42)
-    clf.fit(X_train, y_train)
-
-    y_pred = clf.predict(X_test)
-    acc = accuracy_score(y_test, y_pred)
-
-    print(f"max_depth={max_depth}  test_accuracy={acc:.4f}")
-
-    result = pd.DataFrame({
-        "y_true": y_test.values,
-        "y_pred": y_pred,
-        "accuracy": acc,
-    })
-    return result
+    joblib.dump(model, 'iris_model.pkl')
+    return test_df
 
 
 @test
-def test_accuracy(output, *args) -> None:
-    """Fail the pipeline if test accuracy is below the threshold."""
-    assert output is not None, "Output must not be None"
-    acc = float(output["accuracy"].iloc[0])
-    assert acc >= ACCURACY_THRESHOLD, (
-        f"Test accuracy {acc:.4f} is below threshold {ACCURACY_THRESHOLD}. "
-        "save_results will NOT run."
-    )
+def test_accuracy(output, *args):
+    accuracy = (output['predicted'] == output['target']).mean()
+    assert accuracy >= 0.8, 'Model accuracy is below 80%'

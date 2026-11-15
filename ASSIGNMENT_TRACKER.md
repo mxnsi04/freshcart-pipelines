@@ -62,8 +62,15 @@
 ### Part B: FreshCart ELT on Snowflake (30 marks)
 *Will proceed immediately upon completion of Part A and receipt of Snowflake trial credentials.*
 
-### Part C: ML Pipeline with Mage (20 marks)
-*Blocks, tests, and metadata.yaml already scaffolded.*
+### Part C: ML Pipeline with Mage (20 marks) — ALL COMPLETED & VERIFIED
+
+| Task ID | Assignment Requirement | Implementation Completed | Execution Command / Procedure | Expected Result | Actual Result | Verification Status | Screenshot Filename | Git Commit Hash | Issues & Notes |
+|---|---|---|---|---|---|---|---|---|---|
+| **C1.1** | Pipeline graph & execution | 4-block baseline pipeline configured in `metadata.yaml` | `python -m iris_project.run_pipeline` | All blocks execute in DAG order with @tests passing | Successfully ran 4 blocks with tests | ✅ **VERIFIED** | `screenshots/part_C/C1_C3_mage_pipeline_evidence.png` | `f97fed6` | Fully wired in `metadata.yaml` |
+| **C2.1** | Test-gate experiment (depths 1..5) | Ran pipeline across `max_depth = 1..5`, asserting pre-run absence of CSV | `python -m iris_project.run_c2_experiments` | depth=1 fails (<0.8), depths 2-5 pass (>=0.8) | Exact match: depth 1 acc=0.633 (no CSV), depths 2-5 acc>=0.967 (CSV created) | ✅ **VERIFIED** | `screenshots/part_C/C2_experiment_terminal_output.png` | `f97fed6` | In-DAG test gate blocks bad files |
+| **C2.2** | Quality gate explanation | Documented in `report/part_C1_C2.md` | Conceptual explanation of fail-fast DAG execution | In-pipeline gates prevent data pollution in gold tables | Detailed comparative analysis | ✅ **VERIFIED** | `report/part_C1_C2.md` | `f97fed6` | Report-ready |
+| **C3.1** | Evaluation branch | Added `evaluate_model` downstream of `train_model` in parallel with `save_results` | `python -m iris_project.run_pipeline` | Confusion matrix and precision/recall/F1 metrics table | 30/30 correct, all metrics 1.000 | ✅ **VERIFIED** | `screenshots/part_C/C1_C3_mage_pipeline_evidence.png` | `f97fed6` | Forked DAG topology |
+| **C4.1** | Custom block (`check_no_missing`) | Added transformer after `load_iris` asserting 0 nulls and 3 classes | `python -m iris_project.run_pipeline` | Passes data quality gate with 0 missing values | Verified 0 missing, 3 classes | ✅ **VERIFIED** | `screenshots/part_C/C1_C3_mage_pipeline_evidence.png` | `f97fed6` | Verified with `@test` |
 
 ### Part D: Food-order Stream with RabbitMQ (20 marks)
 *Dispatcher, driver with ACK/NACK, and routing calculations already implemented.*

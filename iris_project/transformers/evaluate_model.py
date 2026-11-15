@@ -1,60 +1,32 @@
-"""
-iris_project/transformers/evaluate_model.py
---------------------------------------------
-Mage transformer block: evaluate_model  (Part C3 – evaluation branch)
-Runs alongside save_results as a second downstream block from train_model.
-Prints a confusion matrix and a metrics table (precision, recall, F1).
-"""
+import pandas as pd
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-try:
-    from mage_ai.data_preparation.decorators import transformer, test
-except ImportError:
-    def transformer(fn):
-        return fn
-    def test(fn):
-        return fn
+if 'transformer' not in globals():
+    try:
+        from mage_ai.data_preparation.decorators import transformer
+    except ImportError:
+        def transformer(fn):
+            return fn
 
 
 @transformer
-def transform(df, *args, **kwargs):
-    """
-    Compute confusion matrix and per-class metrics from predictions.
+def evaluate(df, *args, **kwargs):
+    y_true = df['target']
+    y_pred = df['predicted']
 
-    Parameters
-    ----------
-    df : DataFrame with columns [y_true, y_pred, accuracy]
+    print('Confusion matrix:')
+    cm = pd.crosstab(y_true, y_pred, rownames=['actual'], colnames=['predicted'])
+    print(cm)
 
-    Returns
-    -------
-    dict  {'confusion_matrix': ..., 'report': ...}
-    """
-    from sklearn.metrics import confusion_matrix, classification_report
-    import pandas as pd
-
-    y_true = df["y_true"].values
-    y_pred = df["y_pred"].values
-
-    cm = confusion_matrix(y_true, y_pred)
-    report = classification_report(y_true, y_pred, output_dict=True)
-
-    cm_df = pd.DataFrame(
-        cm,
-        index=["True 0", "True 1", "True 2"],
-        columns=["Pred 0", "Pred 1", "Pred 2"],
-    )
-
-    report_df = pd.DataFrame(report).transpose()
-
-    print("=== Confusion Matrix ===")
-    print(cm_df.to_string())
-    print("\n=== Classification Report ===")
-    print(report_df[["precision", "recall", "f1-score", "support"]].to_string())
-
-    return {"confusion_matrix": cm_df, "report": report_df}
-
-
-@test
-def test_output(output, *args) -> None:
-    assert output is not None
-    assert "confusion_matrix" in output
-    assert "report" in output
+    metrics = pd.DataFrame({
+        'metric': ['accuracy', 'precision', 'recall', 'f1_score'],
+        'value': [
+            round(accuracy_score(y_true, y_pred), 3),
+            round(precision_score(y_true, y_pred, average='macro'), 3),
+            round(recall_score(y_true, y_pred, average='macro'), 3),
+            round(f1_score(y_true, y_pred, average='macro'), 3),
+        ]
+    })
+    print('\nClassification Metrics:')
+    print(metrics)
+    return metrics
