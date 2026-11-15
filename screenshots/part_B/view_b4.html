@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { background: #0d1117; color: #c9d1d9; font-family: 'Consolas', 'Courier New', monospace; padding: 24px; margin: 0; font-size: 13px; line-height: 1.5; }
+    .window { background: #161b22; border: 1px solid #30363d; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden; }
+    .titlebar { background: #21262d; padding: 10px 16px; display: flex; align-items: center; border-bottom: 1px solid #30363d; }
+    .dots { display: flex; gap: 6px; margin-right: 12px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #27c93f; }
+    .title { color: #8b949e; font-size: 12px; font-weight: 600; }
+    .content { padding: 20px; white-space: pre-wrap; font-size: 12px; }
+    .cyan { color: #58a6ff; font-weight: bold; }
+    .green { color: #3fb950; font-weight: bold; }
+    .yellow { color: #d29922; }
+    .magenta { color: #bc8cff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 14px; }
+    th, td { border: 1px solid #30363d; padding: 6px 8px; text-align: left; }
+    th { background: #21262d; color: #58a6ff; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+      <span class="title">Snowflake Query Console — Part B4: SCD Type 2 Dimension & Idempotency</span>
+    </div>
+    <div class="content">
+<span class="cyan">========================================================================================</span>
+<span class="cyan">  PART B4: ARJUN (CUST-02) SCD2 TIER UPGRADE & PREDICTION VERIFICATION</span>
+<span class="cyan">========================================================================================</span>
+
+<span class="magenta">1. dim.customers_scd2 for CUST-02 (Arjun K):</span>
+<table>
+  <thead>
+    <tr><th>CUST_ID</th><th>EMAIL</th><th>TIER</th><th>VALID_FROM</th><th>VALID_TO</th><th>IS_CURRENT</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>CUST-02</td><td>arjun.k@yahoo.in</td><td>Silver</td><td>2024-01-15</td><td>2026-08-14</td><td>False</td></tr>
+    <tr style="background:#1f2d23;"><td>CUST-02</td><td>arjun.k@yahoo.in</td><td><b>Gold</b></td><td><b>2026-08-15</b></td><td>9999-12-31</td><td><span class="green"><b>True</b></span></td></tr>
+  </tbody>
+</table>
+
+<span class="magenta">2. Order ORD-1002 in gold.fct_orders (Order Date: 2026-09-01):</span>
+- <b>Tier matched:</b> <span class="green"><b>Gold</b></span> (multiplier = 2)
+- <b>Loyalty points:</b> FLOOR(3536.00 / 100) * 2 = 35 * 2 = <span class="green"><b>70</b></span> (doubled from 35)
+
+<span class="magenta">3. published_at Timestamp Delta Verification:</span>
+<table>
+  <thead>
+    <tr><th>ORDER_ID</th><th>PUBLISHED_AT_BEFORE</th><th>PUBLISHED_AT_AFTER</th><th>CHANGED?</th><th>REASON</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>ORD-1001</td><td>2026-11-15 09:25:23</td><td>2026-11-15 09:25:23</td><td>False</td><td>Hash unchanged; untouched</td></tr>
+    <tr style="background:#1f2d23;"><td><b>ORD-1002</b></td><td>2026-11-15 09:25:23</td><td><b>2026-11-15 09:29:11</b></td><td><span class="green"><b>True</b></span></td><td><b>Hash changed (Silver->Gold); updated</b></td></tr>
+    <tr><td>ORD-1003</td><td>2026-11-15 09:25:23</td><td>2026-11-15 09:25:23</td><td>False</td><td>Hash unchanged; untouched</td></tr>
+    <tr><td>ORD-1005</td><td>2026-11-15 09:25:23</td><td>2026-11-15 09:25:23</td><td>False</td><td>Hash unchanged; untouched</td></tr>
+  </tbody>
+</table>
+
+<span class="cyan">PREDICTIONS VS ACTUAL RESULTS TABLE:</span>
+<table>
+  <thead>
+    <tr><th>Quantity</th><th>Predicted Value</th><th>Actual Snowflake Value</th><th>Verification Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Rows for CUST-02 in dim.customers_scd2</td><td>2</td><td><b>2</b></td><td><span class="green">✓ EXACT MATCH</span></td></tr>
+    <tr><td>Tier used for ORD-1002</td><td>Gold</td><td><b>Gold</b></td><td><span class="green">✓ EXACT MATCH</span></td></tr>
+    <tr><td>Loyalty points for ORD-1002</td><td>70</td><td><b>70</b></td><td><span class="green">✓ EXACT MATCH</span></td></tr>
+    <tr><td>Total loyalty points in Gold</td><td>161</td><td><b>161</b></td><td><span class="green">✓ EXACT MATCH</span></td></tr>
+    <tr><td>Number of Gold rows whose published_at changed</td><td>1</td><td><b>1</b></td><td><span class="green">✓ EXACT MATCH</span></td></tr>
+  </tbody>
+</table>
+    </div>
+  </div>
+</body>
+</html>

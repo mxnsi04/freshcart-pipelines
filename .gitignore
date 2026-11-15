@@ -7,6 +7,8 @@
 
 # Data files
 *.csv
+*.gz
+freshcart_landing/
 
 # Mage logs
 mage.log

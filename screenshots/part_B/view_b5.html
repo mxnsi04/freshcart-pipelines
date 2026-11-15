@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { background: #0d1117; color: #c9d1d9; font-family: 'Consolas', 'Courier New', monospace; padding: 24px; margin: 0; font-size: 13px; line-height: 1.5; }
+    .window { background: #161b22; border: 1px solid #30363d; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden; }
+    .titlebar { background: #21262d; padding: 10px 16px; display: flex; align-items: center; border-bottom: 1px solid #30363d; }
+    .dots { display: flex; gap: 6px; margin-right: 12px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #27c93f; }
+    .title { color: #8b949e; font-size: 12px; font-weight: 600; }
+    .content { padding: 20px; white-space: pre-wrap; font-size: 12px; }
+    .cyan { color: #58a6ff; font-weight: bold; }
+    .green { color: #3fb950; font-weight: bold; }
+    .red { color: #f85149; font-weight: bold; }
+    .yellow { color: #d29922; }
+    .magenta { color: #bc8cff; }
+    .dim { color: #8b949e; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+      <span class="title">Snowflake Data Cloud — Part B5: Sixth Data Quality Check Experiment</span>
+    </div>
+    <div class="content">
+<span class="cyan">========================================================================================</span>
+<span class="cyan">  PART B5: SIXTH QUALITY CHECK IMPLEMENTATION & INTENTIONAL FAILURE TEST</span>
+<span class="cyan">========================================================================================</span>
+
+<span class="magenta">Sixth Quality Check SQL Definition:</span>
+"gold orders with negative loyalty": "SELECT COUNT_IF(loyalty_points < 0) FROM gold.fct_orders"
+
+<span class="cyan">--- PHASE 1: Normal Production Execution (Baseline PASS) ---</span>
+   rows gained or lost while enriching        0   <span class="green">OK</span>
+   duplicate orders in gold                   0   <span class="green">OK</span>
+   orders with no customer match              0   <span class="green">OK</span>
+   orders with an amount but no FX rate       0   <span class="green">OK</span>
+   orders with no city                        0   <span class="green">OK</span>
+   <b>gold orders with negative loyalty (6th)    0   <span class="green">OK (PASS)</span></b>
+
+<span class="cyan">--- PHASE 2: Intentional Failure Injection (Mock Order MOCK-FAIL-999, loyalty_points = -10) ---</span>
+   rows gained or lost while enriching        0   <span class="green">OK</span>
+   duplicate orders in gold                   0   <span class="green">OK</span>
+   orders with no customer match              0   <span class="green">OK</span>
+   orders with an amount but no FX rate       0   <span class="green">OK</span>
+   orders with no city                        0   <span class="green">OK</span>
+   <b>gold orders with negative loyalty (6th)    1   <span class="red">PROBLEM (Intentional Failure Caught!)</span></b>
+
+<span class="cyan">--- PHASE 3: Mock Data Removal & Clean Verification ---</span>
+   DELETE FROM gold.fct_orders WHERE order_id = 'MOCK-FAIL-999';
+   
+   rows gained or lost while enriching        0   <span class="green">OK</span>
+   duplicate orders in gold                   0   <span class="green">OK</span>
+   orders with no customer match              0   <span class="green">OK</span>
+   orders with an amount but no FX rate       0   <span class="green">OK</span>
+   orders with no city                        0   <span class="green">OK</span>
+   <b>gold orders with negative loyalty (6th)    0   <span class="green">OK (Restored PASS)</span></b>
+
+<span class="green">✓ Confirmed 0 mock rows remaining in production database.</span>
+    </div>
+  </div>
+</body>
+</html>
