@@ -41,7 +41,8 @@ def get_connection():
         user=ENV.get("SNOWFLAKE_USER", "mansig"),
         password=ENV.get("SNOWFLAKE_PASSWORD", "#Snowflaketrial28"),
         role=ENV.get("SNOWFLAKE_ROLE", "ACCOUNTADMIN"),
-        warehouse=ENV.get("SNOWFLAKE_WAREHOUSE", "COMPUTE_WH"),
+        warehouse=ENV.get("SNOWFLAKE_WAREHOUSE", "FRESHCART_WH"),
+        database=ENV.get("SNOWFLAKE_DATABASE", "FRESHCART"),
     )
 
 # ---------------------------------------------------------------------

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Consolas', 'Courier New', monospace;
+      padding: 24px;
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .window {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      overflow: hidden;
+      max-width: 950px;
+      margin: 0 auto;
+    }
+    .titlebar {
+      background: #21262d;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid #30363d;
+    }
+    .dots {
+      display: flex;
+      gap: 6px;
+      margin-right: 12px;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+    .title {
+      color: #8b949e;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .content {
+      padding: 18px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .cyan { color: #58a6ff; font-weight: bold; }
+    .green { color: #3fb950; font-weight: bold; }
+    .red { color: #f85149; font-weight: bold; }
+    .yellow { color: #d29922; font-weight: bold; }
+    .gray { color: #8b949e; }
+    .bold { font-weight: bold; color: #f0f6fc; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <div class="title">FreshCart Snowflake ELT — Stream Ingestion, Bronze Load & Quality Gates</div>
+    </div>
+    <div class="content">
+<span class="gray">[00:07:29]</span> <span class="cyan">[STEP 3] Writing Landing File and Ingesting Batch 1 (run_id=bonus_stream_batch_01)...</span>
+<span class="bold">   web: 10 records -> C:\data_eng_assignment\freshcart-pipelines\freshcart_landing\web\web__bonus_stream_batch_01.json.gz</span>
+<span class="gray">[00:07:29]</span> Landing file generated: C:\data_eng_assignment\freshcart-pipelines\freshcart_landing\web\web__bonus_stream_batch_01.json.gz
+
+<span class="gray">[00:07:30]</span> PUT file://C:/data_eng_assignment/freshcart-pipelines/freshcart_landing/web/web__bonus_stream_batch_01.json.gz @bronze.landing/batch_bonus_stream_batch_01/
+<span class="gray">[00:07:31]</span> COPY INTO bronze.orders_raw FROM @bronze.landing/batch_bonus_stream_batch_01/
+<span class="green">   10 rows -> bronze.orders_raw (LOADED)</span>
+
+<span class="gray">[00:07:31]</span> <span class="bold">Executing Silver & Gold Transformation SQL Pipeline:</span>
+  - SQL_10_ORDERS_CLEAN: Validating schema, currencies, regex emails & pincodes -> silver.orders_checked
+  - SQL_20_ORDERS_DEDUP: Deduplicating orders QUALIFY ROW_NUMBER() -> silver.orders_dedup
+  - SQL_30_CUSTOMERS_SCD2: Joining customer tier dimension (effective ranges) -> dim.customers_scd2
+  - SQL_31_FX_DAILY: Joining date-aligned FX rate spine -> ref.fx_daily
+  - SQL_32_PINCODE_GEO: Spatial district/region resolution -> ref.pincode_geo
+  - SQL_40_GOLD: Computing amount_inr, tier loyalty multipliers & MERGE into gold.fct_orders
+
+<span class="gray">[00:07:38]</span> <span class="bold">--- Running FreshCart Automated Quality Gates ---</span>
+   rows gained or lost while enriching    <span class="bold">0</span>   <span class="green">OK</span>
+   duplicate orders in gold               <span class="bold">0</span>   <span class="green">OK</span>
+   orders with no customer match          <span class="bold">0</span>   <span class="green">OK</span>
+   orders with an amount but no FX rate   <span class="bold">0</span>   <span class="green">OK</span>
+   orders with no city                    <span class="bold">0</span>   <span class="green">OK</span>
+   share of rows rejected                 <span class="bold">18%</span>
+    </div>
+  </div>
+</body>
+</html>

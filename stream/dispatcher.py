@@ -23,6 +23,7 @@ import os
 import random
 import time
 import uuid
+from datetime import datetime, timezone
 import urllib.request
 import urllib.parse
 import base64
@@ -96,6 +97,18 @@ class RabbitClient:
             return data.get("routed", True)
 
 
+# FreshCart customer and geo catalog for stream enrichment (Bonus)
+CUSTOMERS = [
+    ("Priya Raman", "priya.r@gmail.com"),
+    ("Arjun Kumar", "arjun.k@yahoo.in"),
+    ("Meera Patel", "meera@outlook.com"),
+]
+PINCODES = {
+    "bangalore": "560034",
+    "chennai": "600041",
+}
+
+
 def build_message(seq: int) -> tuple[str, dict]:
     """Return (routing_key, message_dict)."""
     city = random.choice(CITIES)
@@ -114,12 +127,23 @@ def build_message(seq: int) -> tuple[str, dict]:
             "_bad": True,
         }
     else:
+        cust_name, cust_email = CUSTOMERS[(seq - 1) % len(CUSTOMERS)]
+        amt = [950.00, 1400.00, 2200.00, 3100.00, 1800.00][(seq - 1) % 5]
         msg = {
             "id": str(uuid.uuid4()),
             "city": city,
             "zone": zone,
             "type": order_type,
             "ts": time.time(),
+            # FreshCart Lakehouse order fields
+            "order_id": f"ORD-STRM-{seq:04d}",
+            "cust_name": cust_name,
+            "cust_email": cust_email,
+            "order_date": "2026-09-10",
+            "amount": amt,
+            "currency": "INR",
+            "pincode": PINCODES.get(city, "560034"),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
         }
 
     return routing_key, msg
