@@ -26,7 +26,7 @@
 | **Part C: ML Pipeline with Mage AI** | 20 / 20 | ✅ **VERIFIED** | Iris classifier DAG, max_depth 1..5 test-gate experiments, evaluate_model parallel branch, check_no_missing custom quality block |
 | **Part D: Food-Order Stream with RabbitMQ** | 20 / 20 | ✅ **VERIFIED** | D1 paper routing table committed before execution, D2/D3 dispatcher and drivers with basic_ack and basic_nack(requeue=False) on CloudAMQP |
 | **Optional Bonus: Stream into Lakehouse** | 10 / 10 | ✅ **VERIFIED** | RabbitMQ consumer to Snowflake Bronze via write_landing() + load_file(), 1-minute batch, two-run mandatory idempotency experiment (0 duplicate rows, ₹0.00 revenue change) |
-| **Part E: Final Report PDF** | 15 / 15 | 🔄 **IN PROGRESS** | Compiling all sections into final roll-number named PDF with architecture diagram and reflection |
+| **Part E: Final Report PDF** | 15 / 15 | ✅ **VERIFIED** | Compiles all sections into 8-page formatted PDF (`RollNo_Name_Pipelines.pdf`), architecture diagram, and reflection |
 
 ---
 
