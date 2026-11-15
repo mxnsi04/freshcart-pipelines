@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { background: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; padding: 20px; font-size: 12px; line-height: 1.45; }
+    .window { background: #161b22; border: 1px solid #30363d; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden; max-width: 950px; margin: 0 auto; }
+    .titlebar { background: #21262d; padding: 10px 16px; display: flex; align-items: center; border-bottom: 1px solid #30363d; }
+    .dots { display: flex; gap: 6px; margin-right: 12px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #27c93f; }
+    .title { color: #8b949e; font-size: 12px; font-weight: 600; }
+    .content { padding: 18px; white-space: pre-wrap; word-break: break-all; }
+    .cyan { color: #58a6ff; font-weight: bold; }
+    .green { color: #3fb950; font-weight: bold; }
+    .yellow { color: #d29922; font-weight: bold; }
+    .bold { font-weight: bold; color: #f0f6fc; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+      <div class="title">Viva Voce Preparation Guide (VIVA_PREPARATION.md) — 23bcs159 (Mansi Grover)</div>
+    </div>
+    <div class="content">
+<span class="bold"># Viva Voce Preparation Guide: Data Engineering Pipeline Orchestration</span>
+<span class="yellow">Student: Mansi Grover | Roll Number: 23bcs159 | Repository: mxnsi04/freshcart-pipelines</span>
+
+<span class="cyan">========================================================================================</span>
+<span class="bold">TOPIC OVERVIEW & INTERVIEW DEFENSE STRUCTURE:</span>
+<span class="cyan">========================================================================================</span>
+
+<span class="bold">1. TOPIC A: Git, GitHub & Continuous Integration (CI/CD)</span>
+   - Working Directory vs Staging vs Local Repo vs Remote Repo
+   - Teammate visibility explanation (No visibility until `git push` network call)
+   - Pytest execution exit code detection in GitHub Actions (`$? == 0` green, `!= 0` red)
+   - Intentional failure with `test_size=0.3` (105 train != 120 train) and fix commit
+
+<span class="bold">2. TOPIC B: Snowflake Multi-Hop ELT (Bronze -> Silver -> Gold)</span>
+   - Full schema trace of ORD-1003 (snake_case vs camelCase normalization, mobile survival)
+   - Customer SCD2 tier matching for ORD-1005 (Priya Gold 2x) vs ORD-1001 (Silver 1x)
+   - Unsupported currency rule (ARRAY_CONSTRUCT_COMPACT, before/after reasons array)
+   - Arjun Gold SCD2 predictions committed before run; row_hash MERGE idempotency
+
+<span class="bold">3. TOPIC C: ML Pipelines & In-DAG Test Gates (Mage AI)</span>
+   - 4-block DAG topology (`load_iris` -> `check_no_missing` -> `prepare_data` -> `train_model`)
+   - `max_depth = 1..5` test-gate table (depth 1 acc=0.633 fails gate, blocks CSV export)
+   - Why in-DAG gates beat post-hoc auditing (prevents storage poisoning, ensures atomicity)
+
+<span class="bold">4. TOPIC D: Real-Time Event Streaming & RabbitMQ</span>
+   - Topic exchange routing table (`*` = 1 word, `#` = 0+ words; 6th key matches Control only)
+   - `basic_ack` vs `basic_nack(requeue=False)` and poison pill infinite crash loop analysis
+
+<span class="bold">5. TOPIC E: Lakehouse Stream Integration (Bonus)</span>
+   - Micro-batch consumer bridge (60s window into compressed landing via `write_landing()`)
+   - Mandatory idempotency experiment: 10 records loaded, forced replay produced 0 duplicates and Rs 0.00 delta
+    </div>
+  </div>
+</body>
+</html>

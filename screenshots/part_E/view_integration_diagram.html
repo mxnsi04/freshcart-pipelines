@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { background: #0d1117; color: #c9d1d9; font-family: 'Consolas', monospace; padding: 20px; font-size: 11px; line-height: 1.3; }
+    .window { background: #161b22; border: 1px solid #30363d; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); overflow: hidden; max-width: 1050px; margin: 0 auto; }
+    .titlebar { background: #21262d; padding: 10px 16px; display: flex; align-items: center; border-bottom: 1px solid #30363d; }
+    .dots { display: flex; gap: 6px; margin-right: 12px; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .dot-red { background: #ff5f56; } .dot-yellow { background: #ffbd2e; } .dot-green { background: #27c93f; }
+    .title { color: #8b949e; font-size: 12px; font-weight: 600; }
+    .content { padding: 16px; white-space: pre; font-size: 10.5px; }
+    .cyan { color: #58a6ff; font-weight: bold; }
+    .green { color: #3fb950; font-weight: bold; }
+    .yellow { color: #d29922; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots"><span class="dot dot-red"></span><span class="dot dot-yellow"></span><span class="dot dot-green"></span></div>
+      <div class="title">Part E Architecture — End-to-End Pipeline Integration Diagram</div>
+    </div>
+    <div class="content">
+<span class="cyan">┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   1. VERSION CONTROL & CI/CD (Part A)                                 │
+│                                                                                                        │
+│   Developer Laptop           Git Commit              GitHub Remote Repo          GitHub Actions CI     │
+│  ┌────────────────┐       ┌──────────────┐        ┌───────────────────────┐    ┌────────────────────┐  │
+│  │ Working Folder ├──────►│ Staging Area ├───────►│ mxnsi04/freshcart-    ├───►│ Python 3.12 Runner │  │
+│  │ (Python / SQL) │       └──────────────┘        │ pipelines (main)      │    │ pytest (9 passed)  │  │
+│  └────────────────┘                               └───────────────────────┘    └─────────┬──────────┘  │
+└──────────────────────────────────────────────────────────────────────────────────────────┼─────────────┘</span>
+                                                                                           │ Automated Tests
+<span class="yellow">┌──────────────────────────────────────────────────────────────────────────────────────────┼─────────────┐
+│ 2. STREAMING EVENT INGESTION (Part D & Bonus)                                           ▼             │
+│                                                                                                        │
+│  ┌──────────────────────┐   Publish Key: city.zone.type   ┌───────────────────────────┐                │
+│  │ stream/dispatcher.py ├────────────────────────────────►│ CloudAMQP Topic Exchange  │                │
+│  │ (Food & Ride events) │                                 │     "rapido-dispatch"     │                │
+│  └──────────────────────┘                                 └──────┬────────────────────┘                │
+│                                  Matching: *.food / #.food       │                                     │
+│                                                                  ▼                                     │
+│                                                   ┌──────────────────────────────┐                     │
+│                                                   │ stream/freshcart_consumer.py │                     │
+│                                                   │  (60s buffer, ACK/NACK gates)│                     │
+│                                                   └──────────────┬───────────────┘                     │
+└──────────────────────────────────────────────────────────────────┼─────────────────────────────────────┘</span>
+                                                                   │ Compressed JSON Landing (write_landing)
+<span class="green">┌──────────────────────────────────────────────────────────────────┼─────────────────────────────────────┐
+│ 3. FRESHCART MULTI-HOP LAKEHOUSE ELT (Part B & Bonus)             ▼                                     │
+│                                                                                                        │
+│  ┌─────────────────────────┐      Automated Cleaning      ┌─────────────────────────┐                  │
+│  │   bronze.orders_raw     ├─────────────────────────────►│   silver.orders_clean   │                  │
+│  │   (PUT + COPY INTO)     │                              │   (Regex, currency, amt)│                  │
+│  └─────────────────────────┘                              └────────────┬────────────┘                  │
+│                                                                        │ QUALIFY ROW_NUMBER()          │
+│                                                                        ▼                               │
+│  ┌─────────────────────────┐      Hash-Based MERGE        ┌─────────────────────────┐                  │
+│  │     gold.fct_orders     │◄─────────────────────────────┤   silver.orders_dedup   │                  │
+│  │  (Idempotent Lakehouse) │  Joins: dim.customers_scd2,  │  (Deduplicated Records) │                  │
+│  └───────────┬─────────────┘         ref.fx_daily,        └─────────────────────────┘                  │
+│              │                       ref.pincode_geo                                                   │
+└──────────────┼─────────────────────────────────────────────────────────────────────────────────────────┘</span>
+               │ Analytical Feature Feed
+<span class="cyan">┌──────────────┼─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 4. ORCHESTRATED MACHINE LEARNING PIPELINE (Part C)                                                     │
+│              ▼                                                                                         │
+│  ┌───────────────────────┐      80/20 Train/Test Split     ┌─────────────────────────┐                 │
+│  │       load_iris       ├────────────────────────────────►│      prepare_data       │                 │
+│  │  (Scikit-Learn Data)  │                                 │ (check_no_missing test) │                 │
+│  └───────────────────────┘                                 └────────────┬────────────┘                 │
+│                                                                         │                              │
+│                                                                         ▼                              │
+│  ┌───────────────────────┐        Parallel Fork            ┌─────────────────────────┐                 │
+│  │     save_results      │◄────────────────────────────────┤       train_model       │                 │
+│  │ (iris_predictions.csv)│                                 │ (Quality Gate Acc>=0.80)│                 │
+│  └───────────────────────┘                                 └────────────┬────────────┘                 │
+│                                                                         │ Parallel Fork                │
+│                                                                         ▼                              │
+│                                                            ┌─────────────────────────┐                 │
+│                                                            │     evaluate_model      │                 │
+│                                                            │ (Confusion Matrix / F1) │                 │
+│                                                            └─────────────────────────┘                 │
+└────────────────────────────────────────────────────────────────────────────────────────────────────────┘</span>
+    </div>
+  </div>
+</body>
+</html>
