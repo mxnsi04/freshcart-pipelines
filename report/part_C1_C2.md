@@ -88,3 +88,4 @@ In an orchestrated pipeline DAG, downstream execution follows dependency resolut
 1. **Prevents Downstream Data Pollution**: In production, `save_results` might write directly to a cloud data warehouse (Snowflake Gold table), a production feature store, or trigger a downstream alerting microservice. Saving bad predictions and checking afterwards means corrupt or degraded model outputs are temporarily visible to consumers, reports, and downstream applications.
 2. **Atomicity & Idempotency**: An in-pipeline gate guarantees that storage artifacts represent *only verified, high-quality deliverables*. No cleanup scripts or rollbacks are required if training degrades.
 3. **Fail-Fast Observability**: The pipeline fails immediately at the point of failure (`train_model`), producing clear logs and alerts rather than requiring downstream audit jobs to flag bad files after the fact.
+

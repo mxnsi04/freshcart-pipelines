@@ -86,3 +86,4 @@ if __name__ == "__main__":
     parser.add_argument("--max-depth", type=int, default=3)
     args = parser.parse_args()
     execute_pipeline(max_depth=args.max_depth)
+

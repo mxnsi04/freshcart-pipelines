@@ -126,3 +126,4 @@ def test_data_quality(output, *args):
 ### 3. Verification & CI Passing
 - The block runs automatically during pipeline execution and asserts zero nulls and 3 unique classes.
 - All existing CI tests (`tests/test_prepare_data.py`) continue to pass without regression.
+
