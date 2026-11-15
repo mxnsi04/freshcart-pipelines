@@ -17,6 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REPORT_DIR = BASE_DIR / "report"
 HTML_PATH = REPORT_DIR / "report_document.html"
 NAMED_PDF_PATH = REPORT_DIR / "23bcs159_Mansi_Grover_Pipelines.pdf"
+GROVER_PDF_PATH = REPORT_DIR / "Mansi_Grover_Pipelines.pdf"
 GENERIC_PDF_PATH = REPORT_DIR / "RollNo_Name_Pipelines.pdf"
 
 HTML_CONTENT = r"""<!DOCTYPE html>
@@ -699,15 +700,26 @@ def generate_pdf():
     subprocess.run(cmd1, check=True)
     print(f"Generated: {NAMED_PDF_PATH}")
 
-    print("Rendering RollNo_Name_Pipelines.pdf...")
+    print("Rendering Mansi_Grover_Pipelines.pdf...")
     cmd2 = [
+        edge_bin,
+        "--headless=new",
+        f"--print-to-pdf={GROVER_PDF_PATH}",
+        "--no-pdf-header-footer",
+        str(HTML_PATH),
+    ]
+    subprocess.run(cmd2, check=True)
+    print(f"Generated: {GROVER_PDF_PATH}")
+
+    print("Rendering RollNo_Name_Pipelines.pdf...")
+    cmd3 = [
         edge_bin,
         "--headless=new",
         f"--print-to-pdf={GENERIC_PDF_PATH}",
         "--no-pdf-header-footer",
         str(HTML_PATH),
     ]
-    subprocess.run(cmd2, check=True)
+    subprocess.run(cmd3, check=True)
     print(f"Generated: {GENERIC_PDF_PATH}")
 
 if __name__ == "__main__":
