@@ -4,29 +4,21 @@
 
 This bonus implementation bridges the real-time event streaming pipeline from **Part D** with the multi-hop Lakehouse ELT architecture from **Part B**:
 
-```
- ┌──────────────────────┐         ┌───────────────────────────┐         ┌──────────────────────────────┐
- │ stream/dispatcher.py │         │ CloudAMQP Topic Exchange  │         │ stream/freshcart_consumer.py │
- │  (Publish every 2s)  ├────────►│     "rapido-dispatch"     ├────────►│   Pattern: "#.food"          │
- └──────────────────────┘         └───────────────────────────┘         │   Window: 60s Buffer         │
-                                                                        └──────────────┬───────────────┘
-                                                                                       │
-                                                                                       ▼
-                                                                        ┌──────────────────────────────┐
-                                                                        │      write_landing()         │
-                                                                        │  freshcart_landing/web/      │
-                                                                        │  web__batch_01.json.gz       │
-                                                                        └──────────────┬───────────────┘
-                                                                                       │
-                                                                                       ▼
-┌──────────────────────────────────────────────────────────────────────────────────────┴───────────────┐
-│                                       SNOWFLAKE LAKEHOUSE                                             │
-│                                                                                                      │
-│  ┌───────────────────────┐         ┌───────────────────────┐         ┌────────────────────────────┐  │
-│  │  bronze.orders_raw    │         │  silver.orders_clean  │         │      gold.fct_orders       │  │
-│  │  (PUT + COPY INTO)    ├────────►│  (Clean & Dedup)      ├────────►│  (Enriched MERGE via Hash) │  │
-│  └───────────────────────┘         └───────────────────────┘         └────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```text
+  [stream/dispatcher.py]
+            │
+            ▼ (topic routing: *.food / #.food)
+  [CloudAMQP Topic Exchange: rapido-dispatch]
+            │
+            ▼ (60s micro-batch buffer · ACK/NACK gate)
+  [stream/freshcart_consumer.py]
+            │
+            ▼ write_landing()
+  [freshcart_landing/web/web__batch_01.json.gz]
+            │
+            ▼ load_file() & transformation SQL
+  [Bronze: orders_raw] ──► [Silver: orders_clean] ──► [Gold: fct_orders]
+                               (Dedup & SCD2)            (Idempotent MERGE)
 ```
 
 ---

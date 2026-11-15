@@ -4,7 +4,7 @@
 **Author:** Mansi Grover  
 **Roll Number:** 23bcs159  
 **GitHub Repository:** [https://github.com/mxnsi04/freshcart-pipelines.git](https://github.com/mxnsi04/freshcart-pipelines.git)  
-**Total Marks Attempted:** 110 Marks (All parts along with optional bonus)
+**Total Marks Claimed:** 110 / 100 (100 Marks Core + 10 Marks Optional Bonus)
 
 ---
 
@@ -20,7 +20,37 @@ This repository provides a unified implementation connecting modern data enginee
 
 ---
 
-## 2. Technology Stack
+## 2. End-to-End Pipeline Architecture
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                      FRESHCART END-TO-END PIPELINE ARCHITECTURE                        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+
+ [1. REAL-TIME EVENT STREAMING] (Part D & Optional Bonus)
+    dispatcher.py ──────► CloudAMQP Topic Exchange ──────► freshcart_consumer.py
+    (Food & Ride events)     ("rapido-dispatch")           (60s Micro-Batch Buffer)
+                                                                  │
+                                                                  ▼ write_landing()
+ [2. SNOWFLAKE LAKEHOUSE MULTI-HOP ELT] (Part B & Optional Bonus)
+    bronze.orders_raw ──► silver.orders_clean ──► silver.orders_dedup ──► gold.fct_orders
+    (Immutable JSON)      (Regex & Currency)      (QUALIFY + SCD2)        (Cryptographic HASH)
+                                                        ▲
+                                               dim.customers_scd2
+                                                        │
+                                                        ▼ Analytical Features
+ [3. ORCHESTRATED ML PIPELINE] (Part C)
+    load_iris ──► check_no_missing ──► prepare_data ──► train_model ──► save & evaluate
+                                                        (@test gate)
+
+ [4. VERSION CONTROL & CI/CD] (Part A - Cross-Cutting)
+    Git Working Area ──────► GitHub Remote (main) ──────► GitHub Actions CI
+    (24+ Conventional Commits)                            (9/9 Pytest Tests Passing)
+```
+
+---
+
+## 3. Technology Stack
 
 - **Cloud Data Warehouse:** Snowflake (`FRESHCART` Database, `FRESHCART_WH` Virtual Warehouse)
 - **Message Broker:** RabbitMQ / CloudAMQP Topic Exchange (AMQP 0-9-1 & HTTPS Management API)

@@ -103,6 +103,89 @@
       font-size: 7.5pt;
       line-height: 1.2;
     }
+    .arch-flow-container {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin: 6pt 0;
+    }
+    .arch-stage {
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background: #ffffff;
+      padding: 7px 10px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .arch-stage-header {
+      font-weight: 700;
+      font-size: 8.5pt;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #24292f;
+    }
+    .badge-tag {
+      font-size: 6.8pt;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .tag-blue { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff; }
+    .tag-green { background: #dafbe1; color: #1a7f37; border: 1px solid #4ac26b; }
+    .tag-purple { background: #fbefff; color: #8250df; border: 1px solid #c297ff; }
+    .tag-orange { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c; }
+    .arch-nodes-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .arch-node {
+      flex: 1;
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 5px;
+      padding: 5px 6px;
+      text-align: center;
+      min-height: 44px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .arch-node strong {
+      font-size: 7.8pt;
+      color: #1f2328;
+      display: block;
+    }
+    .arch-node span {
+      font-size: 6.8pt;
+      color: #0969da;
+      font-family: 'Consolas', monospace;
+      font-weight: 600;
+    }
+    .arch-arrow {
+      color: #57606a;
+      font-weight: bold;
+      font-size: 10pt;
+      user-select: none;
+    }
+    .flow-connector {
+      text-align: center;
+      font-size: 7.2pt;
+      color: #0969da;
+      font-weight: 600;
+      margin: -2px 0;
+    }
+    .arch-mini-step {
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 4px;
+      padding: 3px 6px;
+      color: #24292f;
+    }
     .img-container {
       text-align: center;
       margin: 8pt 0;
@@ -133,68 +216,99 @@
 <h2>End-to-End Integration Architecture Diagram</h2>
 <p>This diagram depicts the end-to-end integration of all four components plus the Lakehouse stream bonus implemented in this project:</p>
 
-<div class="diagram-box">
-┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                   1. VERSION CONTROL & CI/CD (Part A)                                 │
-│                                                                                                        │
-│   Developer Laptop           Git Commit              GitHub Remote Repo          GitHub Actions CI     │
-│  ┌────────────────┐       ┌──────────────┐        ┌───────────────────────┐    ┌────────────────────┐  │
-│  │ Working Folder ├──────►│ Staging Area ├───────►│ mxnsi04/freshcart-    ├───►│ Python 3.12 Runner │  │
-│  │ (Python / SQL) │       └──────────────┘        │ pipelines (main)      │    │ pytest (9 passed)  │  │
-│  └────────────────┘                               └───────────────────────┘    └─────────┬──────────┘  │
-└──────────────────────────────────────────────────────────────────────────────────────────┼─────────────┘
-                                                                                           │ Automated Tests
-┌──────────────────────────────────────────────────────────────────────────────────────────┼─────────────┐
-│ 2. STREAMING EVENT INGESTION (Part D & Bonus)                                           ▼             │
-│                                                                                                        │
-│  ┌──────────────────────┐   Publish Key: city.zone.type   ┌───────────────────────────┐                │
-│  │ stream/dispatcher.py ├────────────────────────────────►│ CloudAMQP Topic Exchange  │                │
-│  │ (Food & Ride events) │                                 │     "rapido-dispatch"     │                │
-│  └──────────────────────┘                                 └──────┬────────────────────┘                │
-│                                  Matching: *.food / #.food       │                                     │
-│                                                                  ▼                                     │
-│                                                   ┌──────────────────────────────┐                     │
-│                                                   │ stream/freshcart_consumer.py │                     │
-│                                                   │  (60s buffer, ACK/NACK gates)│                     │
-│                                                   └──────────────┬───────────────┘                     │
-└──────────────────────────────────────────────────────────────────┼─────────────────────────────────────┘
-                                                                   │ Compressed JSON Landing (write_landing)
-┌──────────────────────────────────────────────────────────────────┼─────────────────────────────────────┐
-│ 3. FRESHCART MULTI-HOP LAKEHOUSE ELT (Part B & Bonus)             ▼                                     │
-│                                                                                                        │
-│  ┌─────────────────────────┐      Automated Cleaning      ┌─────────────────────────┐                  │
-│  │   bronze.orders_raw     ├─────────────────────────────►│   silver.orders_clean   │                  │
-│  │   (PUT + COPY INTO)     │                              │   (Regex, currency, amt)│                  │
-│  └─────────────────────────┘                              └────────────┬────────────┘                  │
-│                                                                        │ QUALIFY ROW_NUMBER()          │
-│                                                                        ▼                               │
-│  ┌─────────────────────────┐      Hash-Based MERGE        ┌─────────────────────────┐                  │
-│  │     gold.fct_orders     │◄─────────────────────────────┤   silver.orders_dedup   │                  │
-│  │  (Idempotent Lakehouse) │  Joins: dim.customers_scd2,  │  (Deduplicated Records) │                  │
-│  └───────────┬─────────────┘         ref.fx_daily,        └─────────────────────────┘                  │
-│              │                       ref.pincode_geo                                                   │
-└──────────────┼─────────────────────────────────────────────────────────────────────────────────────────┘
-               │ Analytical Feature Feed
-┌──────────────┼─────────────────────────────────────────────────────────────────────────────────────────┐
-│ 4. ORCHESTRATED MACHINE LEARNING PIPELINE (Part C)                                                     │
-│              ▼                                                                                         │
-│  ┌───────────────────────┐      80/20 Train/Test Split     ┌─────────────────────────┐                 │
-│  │       load_iris       ├────────────────────────────────►│      prepare_data       │                 │
-│  │  (Scikit-Learn Data)  │                                 │ (check_no_missing test) │                 │
-│  └───────────────────────┘                                 └────────────┬────────────┘                 │
-│                                                                         │                              │
-│                                                                         ▼                              │
-│  ┌───────────────────────┐        Parallel Fork            ┌─────────────────────────┐                 │
-│  │     save_results      │◄────────────────────────────────┤       train_model       │                 │
-│  │ (iris_predictions.csv)│                                 │ (Quality Gate Acc>=0.80)│                 │
-│  └───────────────────────┘                                 └────────────┬────────────┘                 │
-│                                                                         │ Parallel Fork                │
-│                                                                         ▼                              │
-│                                                            ┌─────────────────────────┐                 │
-│                                                            │     evaluate_model      │                 │
-│                                                            │ (Confusion Matrix / F1) │                 │
-│                                                            └─────────────────────────┘                 │
-└────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+<div class="arch-flow-container">
+  <!-- STAGE 1: REAL-TIME STREAMING -->
+  <div class="arch-stage">
+    <div class="arch-stage-header">
+      <span class="badge-tag tag-orange">Stage 1</span>
+      <strong>Real-Time Event Streaming (Part D & Optional Bonus)</strong>
+    </div>
+    <div class="arch-nodes-row">
+      <div class="arch-node">
+        <strong>Event Producer</strong>
+        <span>stream/dispatcher.py</span>
+        <small style="font-size: 6.8pt; color: #57606a;">Food & Ride events (2s intervals)</small>
+      </div>
+      <div class="arch-arrow">──►</div>
+      <div class="arch-node">
+        <strong>CloudAMQP Exchange</strong>
+        <span>rapido-dispatch (topic)</span>
+        <small style="font-size: 6.8pt; color: #57606a;">Topic Wildcard Routing (* and #)</small>
+      </div>
+      <div class="arch-arrow">──►</div>
+      <div class="arch-node">
+        <strong>Stream Consumer</strong>
+        <span>stream/freshcart_consumer.py</span>
+        <small style="font-size: 6.8pt; color: #57606a;">60s Micro-Batch · ACK/NACK Gate</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-connector">▼ Micro-batch raw export via write_landing() & stage load via load_file()</div>
+
+  <!-- STAGE 2: MULTI-HOP LAKEHOUSE ELT -->
+  <div class="arch-stage">
+    <div class="arch-stage-header">
+      <span class="badge-tag tag-blue">Stage 2</span>
+      <strong>FreshCart Multi-Hop Snowflake Lakehouse ELT (Part B & Optional Bonus)</strong>
+    </div>
+    <div class="arch-nodes-row">
+      <div class="arch-node" style="border-left: 3px solid #6e7781;">
+        <strong style="color: #6e7781;">BRONZE</strong>
+        <span>bronze.orders_raw</span>
+        <small style="font-size: 6.8pt; color: #57606a;">Immutable JSON payloads</small>
+      </div>
+      <div class="arch-arrow">──►</div>
+      <div class="arch-node" style="border-left: 3px solid #0969da;">
+        <strong style="color: #0969da;">SILVER CLEAN</strong>
+        <span>silver.orders_clean</span>
+        <small style="font-size: 6.8pt; color: #57606a;">Regex & Currency validation</small>
+      </div>
+      <div class="arch-arrow">──►</div>
+      <div class="arch-node" style="border-left: 3px solid #1a7f37;">
+        <strong style="color: #1a7f37;">SILVER ENRICHED</strong>
+        <span>silver.orders_dedup</span>
+        <small style="font-size: 6.8pt; color: #57606a;">Dedup + dim.customers_scd2</small>
+      </div>
+      <div class="arch-arrow">──►</div>
+      <div class="arch-node" style="border-left: 3px solid #d4a72c; background: #fffdf5;">
+        <strong style="color: #9a6700;">GOLD LAKEHOUSE</strong>
+        <span>gold.fct_orders</span>
+        <small style="font-size: 6.8pt; color: #57606a;">Idempotent Cryptographic MERGE</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-connector">▼ Gold analytical facts feed downstream ML features & reporting</div>
+
+  <!-- STAGE 3 & 4 IN TWO COLUMNS -->
+  <div style="display: flex; gap: 10px;">
+    <!-- STAGE 3: CI/CD & TESTING -->
+    <div class="arch-stage" style="flex: 1;">
+      <div class="arch-stage-header">
+        <span class="badge-tag tag-green">Cross-Cutting</span>
+        <strong>CI/CD & Testing (Part A)</strong>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 7.2pt;">
+        <div class="arch-mini-step"><strong>Local Git:</strong> Working Directory ──► Staging ──► Commit (24+ commits)</div>
+        <div class="arch-mini-step"><strong>Remote:</strong> <code>mxnsi04/freshcart-pipelines</code> (main branch)</div>
+        <div class="arch-mini-step"><strong>GitHub Actions:</strong> Ubuntu 22.04 · Python 3.12 · 9 pytest tests pass</div>
+      </div>
+    </div>
+
+    <!-- STAGE 4: MAGE AI ML PIPELINE -->
+    <div class="arch-stage" style="flex: 1.15;">
+      <div class="arch-stage-header">
+        <span class="badge-tag tag-purple">Stage 3</span>
+        <strong>Orchestrated ML Pipeline (Part C)</strong>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; font-size: 7.2pt;">
+        <div class="arch-mini-step"><strong>DAG Chain:</strong> <code>load_iris</code> ──► <code>check_no_missing</code> ──► <code>prepare_data</code></div>
+        <div class="arch-mini-step"><strong>Quality Gate:</strong> <code>train_model</code> (@test: accuracy &ge; 0.80 enforced)</div>
+        <div class="arch-mini-step"><strong>Parallel Fork:</strong> <code>save_results</code> (CSV) &nbsp;|&nbsp; <code>evaluate_model</code> (F1 Matrix)</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="page-break"></div>
