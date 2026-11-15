@@ -3,6 +3,8 @@
 
 **Last Updated:** 2026-11-15 12:35 IST  
 **Current Git Log:**
+- `aeffe62` `chore(screenshots): add verified clean structure screenshot for Part A1`
+- `3fad4bf` `docs(tracker): update status matrix for Part A1, A2, and A3`
 - `a294196` `docs(report): complete Part A2 Git command analysis and configure pytest with elt notebook`
 - `36285fd` `docs(tracker): add full assignment tracker with D1 routing table and A2 git command answers`
 - `fe60178` `feat(init): scaffold repo – README, .gitignore, requirements, CI workflow`
