@@ -37,8 +37,7 @@ def transform(df, *args, **kwargs):
         Original DataFrame with an additional 'split' column whose values
         are 'train' (120 rows) or 'test' (30 rows).
     """
-    # Deliberate temporary change for Part A3 experiment 2: failing CI
-    test_size = kwargs.get("test_size", 0.3)
+    test_size = kwargs.get("test_size", 0.2)
 
     from sklearn.model_selection import train_test_split
 
