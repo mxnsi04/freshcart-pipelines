@@ -4,7 +4,7 @@
 **Author:** Mansi Grover  
 **Roll Number:** 23bcs159  
 **GitHub Repository:** [https://github.com/mxnsi04/freshcart-pipelines.git](https://github.com/mxnsi04/freshcart-pipelines.git)  
-**Total Marks Claimed:** 110 / 100 (100 Marks Core + 10 Marks Optional Bonus)
+**Total Marks Attempted:** 110 Marks (All parts along with optional bonus)
 
 ---
 

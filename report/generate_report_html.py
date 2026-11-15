@@ -17,7 +17,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REPORT_DIR = BASE_DIR / "report"
 HTML_PATH = REPORT_DIR / "report_document.html"
 NAMED_PDF_PATH = REPORT_DIR / "23bcs159_Mansi_Grover_Pipelines.pdf"
-GROVER_PDF_PATH = REPORT_DIR / "Mansi_Grover_Pipelines.pdf"
 GENERIC_PDF_PATH = REPORT_DIR / "RollNo_Name_Pipelines.pdf"
 
 HTML_CONTENT = r"""<!DOCTYPE html>
@@ -589,7 +588,7 @@ WHEN NOT MATCHED THEN INSERT (...)</pre>
     <tr>
       <th>Assignment Component</th>
       <th>Max Marks</th>
-      <th>Marks Claimed</th>
+      <th>Marks Attempted</th>
       <th>Key Deliverable & Evidence</th>
     </tr>
   </thead>
@@ -600,7 +599,7 @@ WHEN NOT MATCHED THEN INSERT (...)</pre>
     <tr><td><strong>Part D: RabbitMQ Streaming</strong></td><td>20</td><td><strong>20</strong></td><td>D1 paper predictions, live CloudAMQP dispatcher & drivers, basic_nack</td></tr>
     <tr><td><strong>Part E: Report, Diagram, Reflection</strong></td><td>15</td><td><strong>15</strong></td><td>8-page final report, comprehensive integration diagram, engineering reflection</td></tr>
     <tr><td><strong>Bonus: Stream into Lakehouse</strong></td><td>+10</td><td><strong>+10</strong></td><td>RabbitMQ consumer to Snowflake, 60s batch, proven idempotency (Delta = ₹0.00)</td></tr>
-    <tr><td><strong>TOTAL SCORE</strong></td><td><strong>110</strong></td><td><strong>110 / 100</strong></td><td><strong>100% Complete & Verified</strong></td></tr>
+    <tr><td><strong>TOTAL ATTEMPTED</strong></td><td><strong>110</strong></td><td><strong>110 / 100</strong></td><td><strong>All parts along with optional bonus (100% Complete)</strong></td></tr>
   </tbody>
 </table>
 
@@ -699,17 +698,6 @@ def generate_pdf():
     ]
     subprocess.run(cmd1, check=True)
     print(f"Generated: {NAMED_PDF_PATH}")
-
-    print("Rendering Mansi_Grover_Pipelines.pdf...")
-    cmd2 = [
-        edge_bin,
-        "--headless=new",
-        f"--print-to-pdf={GROVER_PDF_PATH}",
-        "--no-pdf-header-footer",
-        str(HTML_PATH),
-    ]
-    subprocess.run(cmd2, check=True)
-    print(f"Generated: {GROVER_PDF_PATH}")
 
     print("Rendering RollNo_Name_Pipelines.pdf...")
     cmd3 = [
