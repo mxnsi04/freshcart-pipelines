@@ -37,12 +37,12 @@ ENV = load_env()
 
 def get_connection():
     return snowflake.connector.connect(
-        account=ENV.get("SNOWFLAKE_ACCOUNT", "fk57668.ap-southeast-7.aws"),
-        user=ENV.get("SNOWFLAKE_USER", "mansig"),
-        password=ENV.get("SNOWFLAKE_PASSWORD", "#Snowflaketrial28"),
-        role=ENV.get("SNOWFLAKE_ROLE", "ACCOUNTADMIN"),
-        warehouse=ENV.get("SNOWFLAKE_WAREHOUSE", "FRESHCART_WH"),
-        database=ENV.get("SNOWFLAKE_DATABASE", "FRESHCART"),
+        account=ENV.get("SNOWFLAKE_ACCOUNT", os.environ.get("SNOWFLAKE_ACCOUNT")),
+        user=ENV.get("SNOWFLAKE_USER", os.environ.get("SNOWFLAKE_USER")),
+        password=ENV.get("SNOWFLAKE_PASSWORD", os.environ.get("SNOWFLAKE_PASSWORD")),
+        role=ENV.get("SNOWFLAKE_ROLE", os.environ.get("SNOWFLAKE_ROLE", "ACCOUNTADMIN")),
+        warehouse=ENV.get("SNOWFLAKE_WAREHOUSE", os.environ.get("SNOWFLAKE_WAREHOUSE", "FRESHCART_WH")),
+        database=ENV.get("SNOWFLAKE_DATABASE", os.environ.get("SNOWFLAKE_DATABASE", "FRESHCART")),
     )
 
 # ---------------------------------------------------------------------
