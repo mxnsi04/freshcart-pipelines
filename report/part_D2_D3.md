@@ -2,11 +2,12 @@
 
 **Date:** 2026-11-15  
 **Course:** Data Engineering · Pipeline Orchestration  
-**Topic Exchange:** `rapido-dispatch`
+**Topic Exchange:** `rapido-dispatch`  
+**Broker Environment:** CloudAMQP (RabbitMQ 4.3.6)
 
 ---
 
-## 1. System Architecture
+## 1. System Architecture & Topology
 
 ```
                        ┌──► [Private Queue: Ravi]    (bangalore.koramangala.*)
@@ -33,7 +34,47 @@
 
 ---
 
-## 2. Answers to Core Message Reliability Questions
+## 2. Live Execution Evidence
+
+The multi-driver streaming system was executed live against CloudAMQP RabbitMQ broker with 3 concurrent drivers:
+- **Ravi:** `bangalore.koramangala.*`
+- **Arjun:** `bangalore.*.ride`
+- **Control:** `bangalore.#`
+
+### Screenshot Evidence
+![Live Streaming Terminal Output](../screenshots/part_D/D2_D3_stream_terminal_output.png)
+
+### Observed Live Log Excerpts
+
+#### A. Multiple Subscribers Matching D1 Topic Routing
+```
+[15:07:58] [0003] Published key=bangalore.koramangala.ride       id=df744b45
+[15:07:59] [Control] ✓ ACK | key=bangalore.koramangala.ride       city=bangalore zone=koramangala type=ride id=df744b45
+[15:07:59] [Arjun]   ✓ ACK | key=bangalore.koramangala.ride       city=bangalore zone=koramangala type=ride id=df744b45
+[15:07:59] [Ravi]    ✓ ACK | key=bangalore.koramangala.ride       city=bangalore zone=koramangala type=ride id=df744b45
+```
+*Key `bangalore.koramangala.ride` satisfies Ravi (zone=koramangala), Arjun (type=ride), and Control (bangalore.#).*
+
+```
+[15:08:10] [0008] Published key=bangalore.whitefield.ride        id=59244f57
+[15:08:10] [Arjun]   ✓ ACK | key=bangalore.whitefield.ride        city=bangalore zone=whitefield type=ride id=59244f57
+[15:08:11] [Control] ✓ ACK | key=bangalore.whitefield.ride        city=bangalore zone=whitefield type=ride id=59244f57
+```
+*Key `bangalore.whitefield.ride` correctly bypassed Ravi (not koramangala) and reached Arjun and Control.*
+
+#### B. D3 Malformed Message NACK (requeue=False) Proof
+```
+[15:08:15] [0010] Published key=bangalore.indiranagar.food       id=0844bfdb *** MALFORMED (no zone) -> Expected NACK ***
+[15:08:15] [Control] ✗ MALFORMED MESSAGE (missing 'zone' field) -> NACK (requeue=False, discarded) | id=0844bfdb
+
+[15:08:38] [0020] Published key=bangalore.indiranagar.food       id=583052ea *** MALFORMED (no zone) -> Expected NACK ***
+[15:08:38] [Control] ✗ MALFORMED MESSAGE (missing 'zone' field) -> NACK (requeue=False, discarded) | id=583052ea
+```
+*Every 10th message was detected as missing `zone`, immediately rejected with `basic_nack(requeue=False)`, and discarded without deadlocking subsequent valid deliveries.*
+
+---
+
+## 3. Answers to Core Message Reliability Questions
 
 ### Question 1: What happens if a driver crashes before sending an ACK?
 
@@ -59,22 +100,3 @@ In RabbitMQ AMQP messaging with explicit acknowledgements (`auto_ack=False`):
   - Reject permanent validation failures using `basic_nack(requeue=False)`.
   - Discard the message or route it to a **Dead Letter Exchange (DLX)** for inspection by support engineers.
   - Reserve `requeue=True` strictly for temporary, recoverable system errors (such as database deadlocks or network glitches).
-
----
-
-## 3. D2 & D3 Execution Protocol
-
-### Running the 2-Minute Demonstration
-The demonstration runs simultaneously across 4 terminal sessions:
-1. **Driver 1 (Ravi):** `python stream/driver.py Ravi "bangalore.koramangala.*"`
-2. **Driver 2 (Arjun):** `python stream/driver.py Arjun "bangalore.*.ride"`
-3. **Driver 3 (Control):** `python stream/driver.py Control "bangalore.#"`
-4. **Dispatcher:** `python stream/dispatcher.py`
-
-### Expected Verification Metrics
-- Routing key matches observed in console output exactly correspond to D1 paper predictions.
-- Every 10th message (`seq % 10 == 0`) displays:
-  - Dispatcher: `*** BAD (no zone) ***`
-  - Drivers: `✗ Bad message (no 'zone') – NACK (discard)`
-- Valid messages display:
-  - Drivers: `✓ ACK | key=...`
